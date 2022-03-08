@@ -39,11 +39,39 @@ for row in reader:
         else: # nu gebruiken we het geboortejaar om het veld 'Ouder dan 100 jaar te vullen'
             row["Ouder dan 100 jaar"] = "Ja" if geboortejaar<1923 else "Nee"
 
-
     # maak een lijst van alle unieke datums die voorkomen
     if row["Geboortedatum"] not in datums: # vind alle unieke datums
         datums.append(row["Geboortedatum"])
 
+    # foutieve overlijdensdatums fixen op basis van woordenboek
+    row["Overlijdensdatum"] = row["Overlijdensdatum"].strip()
+    if row["Overlijdensdatum"] in datum_woordenboek:
+        row["Overlijdensdatum"] = datum_woordenboek[row["Overlijdensdatum"]]
+
+    # als overlijdensdatum voldoet aan de regex dan kun je aannemen dat deze voorkomt in een overlijdensbron (ookal is het 00-00-0000).
+    if row["Overlijdensdatum"]:
+        if not re.findall(r"^\d{2}-\d{2}-\d{4}$", row["Overlijdensdatum"]):
+            print("Vermoedelijke fout in",code,"bij overlijdensdatum:",row["Overlijdensdatum"])
+        else:
+            row["Persoon overleden"] = "Ja"
+            if row["Bron overlijden"]=="": # als er al iets staat bij Bron overlijden (bijv CBG) dan niet overschrijven.
+                row["Bron overlijden"] = "Overlijdensdatum" 
+
+    # als er in de kolom 'Bron overlijden' het volgende staat 'Ouder dan 100 jaar' 
+    # dan deze info verwijderen en onderbrengen in de 'kolom Ouder dan 100 jaar dmv 'Ja'.
+    # En 'Persoon overleden leegmaken'
+    if row["Bron overlijden"]=="Ouder dan 100 jaar":
+        row["Ouder dan 100 jaar"] = "Ja"
+        row["Persoon overleden"] = ""
+        row["Bron overlijden"] = ""
+
+    # als iemands leeftijd in de oorlog >26 nemen we aan dat deze persoon inmiddels ouder zou zijn dan 100 jaar
+    if row["Leeftijd"] and row["Leeftijd"].isdigit():
+        leeftijd = int(row["Leeftijd"])
+        if leeftijd>26:
+            row["Ouder dan 100 jaar"] = "Ja"
+
+    # voeg de regel toe aan de juiste ntni
     ntnis[code].append(row)
 
 ########################################
@@ -62,7 +90,7 @@ for ntni in ntnis.values():
     code = firstRow["CODE"]
 
     # voor nu schrijven we maar 1 ntni weg de rest slaan we over
-    if code!="292-1.601":
+    if code!="713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
         continue 
 
     output_xls_filename = f"output/{code}.xlsx"
