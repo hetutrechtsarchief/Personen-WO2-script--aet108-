@@ -5,7 +5,6 @@ from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
 filename = "alle-personen-7maart2022.csv"
-output_filename = "output.csv"
 output_xls_filename = "alle-personen-7maart2022.xlsx"
 fixed = ["ID","GUID","CODE","BESTANDSNAAM"]
 flex_key = "PROMPT"
@@ -32,10 +31,7 @@ for row in csv.DictReader(open(filename)):
     # update header
     header.append(row[flex_key]) if row[flex_key] not in header else None
 
-# output to csv
-writer = csv.DictWriter(open(output_filename,"w"), fieldnames=header) #, delimiter=',', quoting=csv.QUOTE_ALL, dialect='excel')
-writer.writeheader()
-writer.writerows(items.values())
+##########################################
 
 # write to excel spreadsheet
 workbook = Workbook(output_xls_filename)
