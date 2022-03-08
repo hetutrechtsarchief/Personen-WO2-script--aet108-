@@ -1,1 +1,1 @@
-stap 2
+in deze stap in Excel het grote bestand opslaan als CSV
