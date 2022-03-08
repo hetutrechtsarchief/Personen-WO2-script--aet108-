@@ -4,19 +4,6 @@ import csv,re
 from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
-# select ntni.code, ahd.id, ahd.guid, aew.fvd_id, fvd.prompt, aew.waarde, bes.bestandsnaam
-# from archiefeenheden ahd
-# join archiefeenheid_waarden aew on ahd.id=aew.ahd_id
-# join ahd_relaties rel on rel.ahd_id=ahd.id
-# join ahd_bestanden bes on rel.ahd_id2=bes.ahd_id
-# join archiefeenheden ntni on ahd.ahd_id_top=ntni.id
-# join flexvelden fvd on fvd.id=aew.fvd_id
-# where ahd.aet_id=108
-# and ahd.dt > to_date('01-JAN-21','DD-MON-YY')
-# and aew.waarde is not null
-# and fvd_id not in (8415,8417)
-# order by ahd.dt;
-
 filename = "alle-personen-7maart2022.csv"
 output_filename = "output.csv"
 output_xls_filename = "alle-personen-7maart2022.xlsx"
