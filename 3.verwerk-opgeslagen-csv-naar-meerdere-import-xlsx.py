@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import csv,re,sys
+import csv,re,sys,datetime
 from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
@@ -12,8 +12,14 @@ reader.fieldnames.append("Soort") # soort adres: ingevuld wanneer adres niet lee
 
 datum_woordenboek = { row["fout"]:row["goed"] for row in csv.DictReader(open("datums-woordenboek.txt"), delimiter='\t') }
 
+# deze lijst met matches met Oorlogsbronnen is/wordt in stap 4 gemaakt. En kan daarna weer in stap 3 gebruikt worden
+NOB_matches = { (row[0]+"_"+row[1]):row[2] for row in csv.reader(open("NOB_matches.txt"), delimiter='\t') }
+
+all_rows = []
 ntnis = defaultdict(list)
 datums = []
+
+matching_candidates_file = open("matching_candidates.txt","w")
 
 for row in reader:
     code = row["CODE"]
@@ -55,7 +61,7 @@ for row in reader:
         else:
             row["Persoon overleden"] = "Ja"
             if row["Bron overlijden"]=="": # als er al iets staat bij Bron overlijden (bijv CBG) dan niet overschrijven.
-                row["Bron overlijden"] = "Overlijdensdatum" 
+                row["Bron overlijden"] = "Overlijdensdatum"
 
     # als er in de kolom 'Bron overlijden' het volgende staat 'Ouder dan 100 jaar' 
     # dan deze info verwijderen en onderbrengen in de 'kolom Ouder dan 100 jaar dmv 'Ja'.
@@ -71,8 +77,34 @@ for row in reader:
         if leeftijd>26:
             row["Ouder dan 100 jaar"] = "Ja"
 
+    # maak een lijst van namen+geboortedatum die mogelijk te matchen is via NOB
+    if row["Geboortedatum"]:
+        try:
+            # schrijf naar matching candidates bestand zodat in stap 4 gematched kan worden met NOB
+            date = row["Geboortedatum"]
+            isodate = datetime.datetime.strptime(date, '%d-%m-%Y').strftime('%Y-%m-%d')
+            print(isodate + "\t" + row["Achternaam"], file=matching_candidates_file)
+
+            # wanneer stap 4 (matching met NOB) al is uitgevoerd en gecached 
+            # kijk dan of er een match is voor deze persoon
+            key = isodate+"_"+row["Achternaam"]
+            if key in NOB_matches:
+                NOB_url = NOB_matches[key]
+                if NOB_url and row["Bron overlijden"]=="":
+                    row["Bron overlijden"] = NOB_url
+
+        except ValueError:
+            pass # skip invalid/incomplete dates
+
     # voeg de regel toe aan de juiste ntni
+    all_rows.append(row)
     ntnis[code].append(row)
+
+########################################
+
+# close matching_candidates file
+matching_candidates_file.close()
+
 
 ########################################
 
@@ -84,7 +116,23 @@ for datum in datums:
 
 ########################################
 
-# maak nieuwe spreadsheet(s)
+# maak een nieuwe versie van de grote sheet
+workbook = Workbook("output/all-rows.xlsx")
+worksheet = workbook.add_worksheet()
+
+# write header / fieldnames to top of spreadsheet
+for c, col in enumerate(reader.fieldnames):
+    worksheet.write(0, c, col) 
+
+# write all rows
+for r, row in enumerate(all_rows):
+    for c, col in enumerate(reader.fieldnames):
+        if col in row:
+            worksheet.write(r+1, c, row[col])
+
+workbook.close()
+
+# maak losse nieuwe spreadsheet(s) per ntni
 for ntni in ntnis.values():
     firstRow = ntni[0]
     code = firstRow["CODE"]
