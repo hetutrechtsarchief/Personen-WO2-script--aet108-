@@ -109,7 +109,7 @@ for row in reader:
                 # als Bron overlijden nog niet is ingevuld en we hebben een match dan Bron overlijden instellen
                 if row["Bron overlijden"]=="":
                     row["Bron overlijden"] = "Netwerk Oorlogsbronnen"
-                    
+
         except ValueError:
             pass # skip invalid/incomplete dates
 
@@ -130,6 +130,16 @@ for row in reader:
 
     # voeg overal het trefwoord Tweede Wereldoorlog toe
     row["Trefwoord (tmp)"] = "Tweede Wereldoorlog"
+
+    ###############################################
+
+    # uitzondering: van 650.101 mag wél de meta-data online (maar niet de scan)
+    if code=="650.101":
+        row["Overslaan in uitvoer"]="Nee"
+        # we willen per uitzondering "Persoon overleden" niet tonen op de website bij 650.101
+        row["Persoon overleden"] = ""
+
+    ###############################################
 
     # voeg de regel toe aan de juiste ntni
     all_rows.append(row)
@@ -175,7 +185,7 @@ for ntni in ntnis.values():
     code = firstRow["CODE"]
 
     # voor nu schrijven we maar 1 ntni weg de rest slaan we over
-    if code!="713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
+    if code!="650.101": #713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
         continue 
 
     output_xls_filename = f"output/{code}.xlsx"
