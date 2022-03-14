@@ -1,4 +1,4 @@
-﻿select ntni.code, ahd.id, ahd.guid, aew.fvd_id, fvd.prompt, aew.waarde, bes.bestandsnaam
+﻿select ntni.code, ahd.id, ahd.guid, aew.fvd_id, fvd.prompt, aew.waarde, bes.bestandsnaam AS "Bestandsnaam (tmp)"
 from archiefeenheden ahd
 join archiefeenheid_waarden aew on ahd.id=aew.ahd_id
 join ahd_relaties rel on rel.ahd_id=ahd.id
@@ -8,5 +8,6 @@ join flexvelden fvd on fvd.id=aew.fvd_id
 where ahd.aet_id=108 -- PSN (Persoon)
 and ahd.dt > to_date('01-JAN-21','DD-MON-YY')
 and aew.waarde is not null
-and fvd_id not in (8415,8417) -- date/user mutated
+and fvd_id not in (8415,8417,9771) -- date/user mutated, 9771=Bestandsnaam (tmp)
 order by ahd.dt;
+
