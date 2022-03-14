@@ -4,7 +4,7 @@ import csv,re,sys,datetime
 from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
-input_csv_filename = "alle-personen-7maart2022-bewerkt-in-excel.csv"
+input_csv_filename = "resultaat-van-stap1.csv"
 
 reader = csv.DictReader(open(input_csv_filename, "r", encoding="utf-8-sig"), dialect='excel', delimiter=";")
 
@@ -28,8 +28,20 @@ for row in reader:
     if row["Straatnaam"]!="" or row["Plaats"]!="":
         row["Soort"] = "Adres"
 
-    # foutieve geboortedatums fixen op basis van woordenboek
+    # verwijder witruimte rondom bij datums
     row["Geboortedatum"] = row["Geboortedatum"].strip() # verwijder witruimte links en rechts van datum
+
+    # probeer datums zonder nullen zoals 1-5-1900 te schrijven als 01-05-1900
+    if row["Geboortedatum"]:
+        try:
+            datum = row["Geboortedatum"]
+            row["Geboortedatum"] = datetime.datetime.strptime(datum, '%d-%m-%Y').strftime('%d-%m-%Y')
+            # print("datum gefixt",datum,"naar",row["Geboortedatum"])
+        except ValueError:
+            # print("invalid date",datum)
+            pass
+
+    # foutieve geboortedatums fixen op basis van woordenboek    
     if row["Geboortedatum"] in datum_woordenboek:
         row["Geboortedatum"] = datum_woordenboek[row["Geboortedatum"]]
 
@@ -83,18 +95,22 @@ for row in reader:
             # schrijf naar matching candidates bestand zodat in stap 4 gematched kan worden met NOB
             date = row["Geboortedatum"]
             isodate = datetime.datetime.strptime(date, '%d-%m-%Y').strftime('%Y-%m-%d')
-            print(isodate + "\t" + row["Achternaam"], file=matching_candidates_file)
+            # print(isodate + "\t" + row["Achternaam"], file=matching_candidates_file)
 
             # wanneer stap 4 (matching met NOB) al is uitgevoerd en gecached 
             # kijk dan of er een match is voor deze persoon
             key = isodate+"_"+row["Achternaam"]
             if key in NOB_matches:
                 NOB_url = NOB_matches[key]
-                if NOB_url and row["Bron overlijden"]=="":
-                    row["Bron overlijden"] = NOB_url
+                # if NOB_url and row["Bron overlijden"]=="":
+                row["Externe Identifier"] = NOB_url
 
         except ValueError:
             pass # skip invalid/incomplete dates
+
+    # overslaan in Uitvoer?
+    # TODO
+    row["Overslaan in uitvoer"] = "?"
 
     # voeg de regel toe aan de juiste ntni
     all_rows.append(row)
@@ -112,7 +128,12 @@ matching_candidates_file.close()
 datums.sort() 
 for datum in datums:
     if datum and not re.findall(r"^\d{2}-\d{2}-\d{4}$", datum):
-        print("^"+datum+"$")
+        print("foutieve datum, niet hersteld door woordenboek: ^"+datum+"$")
+        try:
+            isodate = datetime.datetime.strptime(datum, '%d-%m-%Y').strftime('%Y-%m-%d')
+            print("  > wel te fixen!", isodate)
+        except ValueError:
+            pass
 
 ########################################
 
@@ -131,6 +152,8 @@ for r, row in enumerate(all_rows):
             worksheet.write(r+1, c, row[col])
 
 workbook.close()
+
+########################################
 
 # maak losse nieuwe spreadsheet(s) per ntni
 for ntni in ntnis.values():
