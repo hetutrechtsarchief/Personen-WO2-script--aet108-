@@ -30,10 +30,10 @@ for birthdate, lastname in reader:
             print("Error downloading",url)
             pass
 
+
     # write matches to tsv file
     items = data["data"][0]["items"]
     if items:
-        match = items[0]["tuple"][0]["id"]
-        match = match.replace("person","tijdlijn")
+        match = items[0]["tuple"][0]["attributes"]["source"][0]["@id"]
+        match = match.replace("https://www.oorlogslevens.nl/record","https://www.oorlogsbronnen.nl/tijdlijn")
         print(f"{birthdate}\t{lastname}\t{match}\t", file=matches_output_file)
-
