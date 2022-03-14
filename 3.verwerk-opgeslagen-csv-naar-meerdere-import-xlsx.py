@@ -15,6 +15,9 @@ datum_woordenboek = { row["fout"]:row["goed"] for row in csv.DictReader(open("da
 # deze lijst met matches met Oorlogsbronnen is/wordt in stap 4 gemaakt. En kan daarna weer in stap 3 gebruikt worden
 NOB_matches = { (row[0]+"_"+row[1]):row[2] for row in csv.reader(open("NOB_matches.txt"), delimiter='\t') }
 
+# addressen lijst - lookup table
+adressen_lijst = { row["PERSOON_ID"]:row for row in csv.DictReader(open("resultaat-van-stap5-adressen.csv"), delimiter=';') }
+
 all_rows = []
 ntnis = defaultdict(list)
 datums = []
@@ -140,6 +143,22 @@ for row in reader:
         row["Persoon overleden"] = ""
 
     ###############################################
+
+
+    # TODO: uit het resultaat van stap 5 (adressen) nu de kolommen met adres informatie vullen indien leeg...
+    # op basis van Persoon ID!
+    if row["Straatnaam"]=="":
+        # print("Dan opzoek naar adres in resultaat-van-stap5-adressen.csv",row["ID"])
+
+        if row["ID"] in adressen_lijst:
+            adres = adressen_lijst[row["ID"]] # adressen_lijst is per PERSOON_ID
+
+            row["Straatnaam"] = adres["Straat (tijdelijk)"]
+            row["Huisnummer"] = adres["Huisnummer(s)"]
+            row["Huisnummer toev."] = adres["Huisnummer toev."]
+            row["Plaats"] = adres["Plaats (tijdelijk)"]
+
+    ##############################################
 
     # voeg de regel toe aan de juiste ntni
     all_rows.append(row)
