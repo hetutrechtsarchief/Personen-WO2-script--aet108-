@@ -4,9 +4,10 @@ import csv,re
 from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
-filename = "alle-personen-7maart2022.csv"
-output_xls_filename = "alle-personen-7maart2022.xlsx"
-fixed = ["ID","GUID","CODE","BESTANDSNAAM"]
+filename = "alle-personen-14-maart.csv"
+output_csv_filename = "resultaat-van-stap1.csv"
+output_xls_filename = "resultaat-van-stap1.xlsx"
+fixed = ["ID","GUID","CODE", "Bestandsnaam (tmp)"]
 flex_key = "PROMPT"
 flex_value = "WAARDE"
 
@@ -30,6 +31,13 @@ for row in csv.DictReader(open(filename)):
         
     # update header
     header.append(row[flex_key]) if row[flex_key] not in header else None
+
+##########################################
+
+# output to csv
+writer = csv.DictWriter(open(output_csv_filename,"w"), fieldnames=header, delimiter=";")
+writer.writeheader()
+writer.writerows(items.values())
 
 ##########################################
 
