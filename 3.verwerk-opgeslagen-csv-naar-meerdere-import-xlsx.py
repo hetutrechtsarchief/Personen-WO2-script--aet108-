@@ -102,15 +102,34 @@ for row in reader:
             key = isodate+"_"+row["Achternaam"]
             if key in NOB_matches:
                 NOB_url = NOB_matches[key]
-                # if NOB_url and row["Bron overlijden"]=="":
+                
+                # in het geval van een match de url van Netwerk Oorlogsbronnen invullen in het veld Externe Identifier
                 row["Externe Identifier"] = NOB_url
 
+                # als Bron overlijden nog niet is ingevuld en we hebben een match dan Bron overlijden instellen
+                if row["Bron overlijden"]=="":
+                    row["Bron overlijden"] = "Netwerk Oorlogsbronnen"
+                    
         except ValueError:
             pass # skip invalid/incomplete dates
 
-    # overslaan in Uitvoer?
-    # TODO
-    row["Overslaan in uitvoer"] = "?"
+    #############################################
+    # Overslaan in uitvoer?
+
+    # alleen wanneer er nog niks (al dan niet handmatig) is ingevuld dan willen we de waarde berekenen
+    if row["Overslaan in uitvoer"]=="":
+
+        # als de persoon ouder is dan 100 jaar of er is een Bron overlijden dan willen we deze níet overslaan
+        if row["Ouder dan 100 jaar"]=="Ja" or row["Bron overlijden"]!="":
+            row["Overslaan in uitvoer"] = "Nee"
+        else:
+            # in dit geval is de persoon misschien jonger dan 100 (want Nee of Onbekend)
+            # en/of de Bron van overlijden is niet bekend (Bron overlijden kan zijn: CBG, NOB, Overlijdensdatum, Burgelijke Stand etc.)
+            row["Overslaan in uitvoer"] = "Ja"            
+
+
+    # voeg overal het trefwoord Tweede Wereldoorlog toe
+    row["Trefwoord (tmp)"] = "Tweede Wereldoorlog"
 
     # voeg de regel toe aan de juiste ntni
     all_rows.append(row)
@@ -128,12 +147,7 @@ matching_candidates_file.close()
 datums.sort() 
 for datum in datums:
     if datum and not re.findall(r"^\d{2}-\d{2}-\d{4}$", datum):
-        print("foutieve datum, niet hersteld door woordenboek: ^"+datum+"$")
-        try:
-            isodate = datetime.datetime.strptime(datum, '%d-%m-%Y').strftime('%Y-%m-%d')
-            print("  > wel te fixen!", isodate)
-        except ValueError:
-            pass
+        print("foutieve datum, niet hersteld door woordenboek: ^"+datum+"$", "inv="+code)
 
 ########################################
 
