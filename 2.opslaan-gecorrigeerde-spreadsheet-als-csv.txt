@@ -1,1 +1,4 @@
 in deze stap in Excel het grote bestand opslaan als CSV
+
+Maar dat is alleen nodig wanneer je in excel nog wijzigingen hebt aangebracht.
+Als dat niet zo is dan kan stap 3 direct aan de slag met de CSV die uit stap 1 komt.
