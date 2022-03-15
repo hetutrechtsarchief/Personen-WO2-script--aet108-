@@ -4,25 +4,25 @@ import csv,re,sys,datetime
 from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
-input_csv_filename = "resultaat-van-stap1.csv"
+input_csv_filename = "data/resultaat-van-stap1.csv"
 
 reader = csv.DictReader(open(input_csv_filename, "r", encoding="utf-8-sig"), dialect='excel', delimiter=";")
 
 reader.fieldnames.append("Soort") # soort adres: ingevuld wanneer adres niet leeg is.
 
-datum_woordenboek = { row["fout"]:row["goed"] for row in csv.DictReader(open("datums-woordenboek.txt"), delimiter='\t') }
+datum_woordenboek = { row["fout"]:row["goed"] for row in csv.DictReader(open("data/datums-woordenboek.txt"), delimiter='\t') }
 
 # deze lijst met matches met Oorlogsbronnen is/wordt in stap 4 gemaakt. En kan daarna weer in stap 3 gebruikt worden
-NOB_matches = { (row[0]+"_"+row[1]):row[2] for row in csv.reader(open("NOB_matches.txt"), delimiter='\t') }
+NOB_matches = { (row[0]+"_"+row[1]):row[2] for row in csv.reader(open("data/NOB_matches.txt"), delimiter='\t') }
 
 # addressen lijst - lookup table
-adressen_lijst = { row["PERSOON_ID"]:row for row in csv.DictReader(open("resultaat-van-stap5-adressen.csv"), delimiter=';') }
+adressen_lijst = { row["PERSOON_ID"]:row for row in csv.DictReader(open("data/resultaat-van-stap5-adressen.csv"), delimiter=';') }
 
 all_rows = []
 ntnis = defaultdict(list)
 datums = []
 
-matching_candidates_file = open("matching_candidates.txt","w")
+# matching_candidates_file = open("matching_candidates.txt","w")
 
 for row in reader:
     code = row["CODE"]
@@ -167,7 +167,7 @@ for row in reader:
 ########################################
 
 # close matching_candidates file
-matching_candidates_file.close()
+# matching_candidates_file.close()
 
 
 ########################################
@@ -181,7 +181,7 @@ for datum in datums:
 ########################################
 
 # maak een nieuwe versie van de grote sheet
-workbook = Workbook("output/all-rows.xlsx")
+workbook = Workbook("data/all-rows.xlsx")
 worksheet = workbook.add_worksheet()
 
 # write header / fieldnames to top of spreadsheet
@@ -204,10 +204,10 @@ for ntni in ntnis.values():
     code = firstRow["CODE"]
 
     # voor nu schrijven we maar 1 ntni weg de rest slaan we over
-    if code!="650.101": #713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
+    if code!="650.102-a": #713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
         continue 
 
-    output_xls_filename = f"output/{code}.xlsx"
+    output_xls_filename = f"data/{code}.xlsx"
 
     # write to excel spreadsheet
     workbook = Workbook(output_xls_filename)

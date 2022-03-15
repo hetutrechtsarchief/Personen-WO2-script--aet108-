@@ -4,13 +4,13 @@ import csv, os.path, json
 from urllib.request import urlopen
 import urllib.parse
 
-reader = csv.reader(open("matching_candidates.txt"), delimiter='\t')
+reader = csv.reader(open("data/matching_candidates.txt"), delimiter='\t')
 
-matches_output_file = open("NOB_matches.txt","w")
+matches_output_file = open("data/NOB_matches.txt","w")
 
 for birthdate, lastname in reader:
     
-    cache_filename = f"matching_cache/{birthdate}_{lastname}.json"
+    cache_filename = f"data/matching_cache/{birthdate}_{lastname}.json"
 
     if os.path.isfile(cache_filename):
         data = json.load(open(cache_filename))

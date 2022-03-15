@@ -4,9 +4,9 @@ import csv,re
 from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
-filename = "alle-personen-14-maart.csv"
-output_csv_filename = "resultaat-van-stap1.csv"
-output_xls_filename = "resultaat-van-stap1.xlsx"
+filename = "data/alle-personen-14-maart.csv"
+output_csv_filename = "data/resultaat-van-stap1.csv"
+output_xls_filename = "data/resultaat-van-stap1.xlsx"
 fixed = ["ID","GUID","CODE", "Bestandsnaam (tmp)"]
 flex_key = "PROMPT"
 flex_value = "WAARDE"
