@@ -13,7 +13,11 @@ for birthdate, lastname in reader:
     cache_filename = f"data/matching_cache/{birthdate}_{lastname}.json"
 
     if os.path.isfile(cache_filename):
-        data = json.load(open(cache_filename))
+        try:
+            data = json.load(open(cache_filename))
+        except:
+            print("Error loading",cache_filename)
+            continue
     else:
         print(birthdate, lastname)
 
