@@ -6,6 +6,8 @@ from xlsxwriter.workbook import Workbook
 
 input_csv_filename = "data/resultaat-van-stap1.csv"
 
+matching_candidates_file = open("data/matching_candidates.txt","w")
+
 reader = csv.DictReader(open(input_csv_filename, "r", encoding="utf-8-sig"), dialect='excel', delimiter=";")
 
 reader.fieldnames.append("Soort") # soort adres: ingevuld wanneer adres niet leeg is.
@@ -21,8 +23,6 @@ adressen_lijst = { row["PERSOON_ID"]:row for row in csv.DictReader(open("data/re
 all_rows = []
 ntnis = defaultdict(list)
 datums = []
-
-# matching_candidates_file = open("matching_candidates.txt","w")
 
 for row in reader:
     code = row["CODE"]
@@ -98,7 +98,7 @@ for row in reader:
             # schrijf naar matching candidates bestand zodat in stap 4 gematched kan worden met NOB
             date = row["Geboortedatum"]
             isodate = datetime.datetime.strptime(date, '%d-%m-%Y').strftime('%Y-%m-%d')
-            # print(isodate + "\t" + row["Achternaam"], file=matching_candidates_file)
+            print(isodate + "\t" + row["Achternaam"], file=matching_candidates_file)
 
             # wanneer stap 4 (matching met NOB) al is uitgevoerd en gecached 
             # kijk dan of er een match is voor deze persoon
@@ -144,6 +144,11 @@ for row in reader:
 
     ###############################################
 
+    # uitzondering: van 650.102-* mag wél de meta-data online
+    if code.find("650.102-")>-1:
+        row["Overslaan in uitvoer"]="Nee"
+
+    ###############################################
 
     # TODO: uit het resultaat van stap 5 (adressen) nu de kolommen met adres informatie vullen indien leeg...
     # op basis van Persoon ID!
@@ -167,7 +172,7 @@ for row in reader:
 ########################################
 
 # close matching_candidates file
-# matching_candidates_file.close()
+matching_candidates_file.close()
 
 
 ########################################
@@ -204,10 +209,10 @@ for ntni in ntnis.values():
     code = firstRow["CODE"]
 
     # voor nu schrijven we maar 1 ntni weg de rest slaan we over
-    if code!="650.102-a": #713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
-        continue 
+    # if code!="650.102-a": #713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
+    #     continue 
 
-    output_xls_filename = f"data/{code}.xlsx"
+    output_xls_filename = f"data/naar-mais/{code}.xlsx"
 
     # write to excel spreadsheet
     workbook = Workbook(output_xls_filename)
