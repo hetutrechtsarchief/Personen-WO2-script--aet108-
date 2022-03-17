@@ -52,7 +52,11 @@ for row in reader:
     if not row["Geboortedatum"]:
         row["Ouder dan 100 jaar"] = "Onbekend"
     else:
-        geboortejaar = int(row["Geboortedatum"][-4:])
+        geboortejaar = 0
+        try:
+            geboortejaar = int(row["Geboortedatum"][-4:])
+        except:
+            pass
         if geboortejaar==0:
             row["Ouder dan 100 jaar"] = "Onbekend"
         elif not (geboortejaar>1800 and geboortejaar<1980):
@@ -93,6 +97,7 @@ for row in reader:
             row["Ouder dan 100 jaar"] = "Ja"
 
     # maak een lijst van namen+geboortedatum die mogelijk te matchen is via NOB
+    # indien stap 4 al is uitgevoerd wordt ook een evt gevonden match in het veld Externe Identifier bewaard
     if row["Geboortedatum"]:
         try:
             # schrijf naar matching candidates bestand zodat in stap 4 gematched kan worden met NOB
@@ -107,7 +112,9 @@ for row in reader:
                 NOB_url = NOB_matches[key]
                 
                 # in het geval van een match de url van Netwerk Oorlogsbronnen invullen in het veld Externe Identifier
-                row["Externe Identifier"] = NOB_url
+                # maar voorkom dat handmatig ingevulde of verbeterde Externe Identifier's worden overschreven.
+                if not row["Externe Identifier"]:
+                    row["Externe Identifier"] = NOB_url
 
                 # als Bron overlijden nog niet is ingevuld en we hebben een match dan Bron overlijden instellen
                 if row["Bron overlijden"]=="":
@@ -150,7 +157,7 @@ for row in reader:
 
     ###############################################
 
-    # TODO: uit het resultaat van stap 5 (adressen) nu de kolommen met adres informatie vullen indien leeg...
+    # uit het resultaat van stap 5 (adressen) nu de kolommen met adres informatie vullen indien leeg...
     # op basis van Persoon ID!
     if row["Straatnaam"]=="":
         # print("Dan opzoek naar adres in resultaat-van-stap5-adressen.csv",row["ID"])
@@ -162,6 +169,14 @@ for row in reader:
             row["Huisnummer"] = adres["Huisnummer(s)"]
             row["Huisnummer toev."] = adres["Huisnummer toev."]
             row["Plaats"] = adres["Plaats (tijdelijk)"]
+            row["Soort"] = "Adres"
+
+    ##############################################
+
+    # veld 'Scan Zichtbaar' op 'nee' zetten indien: bij veld Persoon overleden 'Nee' of 'Onbekend' staat
+    if row['Persoon overleden'] in ["Nee", "Onbekend"]:
+        row["Scan Zichtbaar"] = "Nee"
+        row["Opmerking bij scan"] = "<a href='https://hetutrechtsarchief.nl'>test</a>"
 
     ##############################################
 
