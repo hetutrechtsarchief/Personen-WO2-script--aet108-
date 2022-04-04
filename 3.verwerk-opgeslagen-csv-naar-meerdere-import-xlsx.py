@@ -137,7 +137,6 @@ for row in reader:
             # en/of de Bron van overlijden is niet bekend (Bron overlijden kan zijn: CBG, NOB, Overlijdensdatum, Burgelijke Stand etc.)
             row["Overslaan in uitvoer"] = "Ja"            
 
-
     # voeg overal het trefwoord Tweede Wereldoorlog toe
     row["Trefwoord (tmp)"] = "Tweede Wereldoorlog"
 
@@ -180,6 +179,7 @@ for row in reader:
 
     ##############################################
 
+    
     # voeg de regel toe aan de juiste ntni
     all_rows.append(row)
     ntnis[code].append(row)
@@ -220,11 +220,13 @@ workbook.close()
 
 # maak losse nieuwe spreadsheet(s) per ntni
 for ntni in ntnis.values():
+    continue # skip this step for now
+
     firstRow = ntni[0]
     code = firstRow["CODE"]
 
     # voor nu schrijven we maar 1 ntni weg de rest slaan we over
-    # if code!="650.102-a": #713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
+    # if code!="1202.215": #650.102-a": #713-9.27": #825.549": #650.50": #1202.216": #292-1.601":
     #     continue 
 
     output_xls_filename = f"data/naar-mais/{code}.xlsx"
@@ -244,4 +246,54 @@ for ntni in ntnis.values():
                 worksheet.write(r+1, c, row[col])
 
     workbook.close()
+
+###########################################
+
+# maak losse kleine spreadsheets voor partners (eenmalig)
+for ntni in ntnis.values():
+
+    firstRow = ntni[0]
+    code = firstRow["CODE"]
+
+    # only 825. contains partners.
+    if code.find("825.7")==-1:
+        continue 
+
+    output_xls_filename = f"data/partners/{code}.xlsx"
+
+    # write to excel spreadsheet
+    workbook = Workbook(output_xls_filename)
+    worksheet = workbook.add_worksheet()
+
+    # write header / fieldnames to top of spreadsheet
+    outputheader = [ "filename","fname","prefix","sname","bdate","bplace","place","street","housenr","housenr_postfix" ]
+
+    for c, col in enumerate(outputheader):
+        worksheet.write(0, c, col)
+
+    r=0
+    for row in ntni:
+
+        if row["Partner achternaam"] or row["Partner voornaam"]:
+
+            partner = {}
+            partner["filename"] = row["Bestandsnaam (tmp)"]
+            partner["fname"] = row["Partner voornaam"]
+            partner["prefix"] = row["Partner tussenvoeg."]
+            partner["sname"] = row["Partner achternaam"]
+            partner["bdate"] = row["Partner geb. datum"]
+            partner["bplace"] = ""
+            partner["place"] = row["Plaats"]
+            partner["street"] = row["Straatnaam"]
+            partner["housenr"] = row["Huisnummer"]
+            partner["housenr_postfix"] = row["Huisnummer toev."]
+
+            for c, col in enumerate(outputheader):
+                if col in partner:
+                    worksheet.write(r+1, c, partner[col])
+
+            r += 1 # increase row. cannot use enumerate because we're skipping most items
+
+    workbook.close()
+
 

@@ -4,7 +4,7 @@ import csv,re
 from collections import defaultdict
 from xlsxwriter.workbook import Workbook
 
-filename = "data/alle-personen-31-maart.csv"
+filename = "data/alle-personen-4-april.csv"
 output_csv_filename = "data/resultaat-van-stap1.csv"
 output_xls_filename = "data/resultaat-van-stap1.xlsx"
 fixed = ["ID","GUID","CODE", "Bestandsnaam (tmp)"]
