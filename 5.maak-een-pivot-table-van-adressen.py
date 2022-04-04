@@ -28,10 +28,6 @@ for row in csv.DictReader(open(filename)):
 
     # add flex fields
     item[row[flex_key]] = row[flex_value]
-
-    # if row["PERSOON_ID"]=='52161163':
-    #     print(item)
-
         
     # update header
     header.append(row[flex_key]) if row[flex_key] not in header else None
