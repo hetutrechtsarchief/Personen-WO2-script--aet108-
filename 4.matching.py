@@ -30,6 +30,12 @@ for birthdate, lastname in reader:
             request = urlopen(url)
             data = json.load(request)
             json.dump(data, open(cache_filename,"w"), indent=4)
+
+            items = data["data"][0]["items"]
+            if items:
+                match = items[0]["tuple"][0]["attributes"]["source"][0]["@id"]
+                print(f"Match gevonden: {birthdate}\t{lastname}\t{match}\t")
+
         except:
             print("Error downloading",url)
             pass
