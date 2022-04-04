@@ -161,10 +161,10 @@ for row in reader:
     # op basis van Persoon ID!
     if row["Straatnaam"]=="":
         # print("Dan opzoek naar adres in resultaat-van-stap5-adressen.csv",row["ID"])
+        persoonID = row["ID"]
 
-        if row["ID"] in adressen_lijst:
-            adres = adressen_lijst[row["ID"]] # adressen_lijst is per PERSOON_ID
-
+        if persoonID in adressen_lijst: # zit deze persoon in de 'adressenlijst' uit mais? zo ja dan dát adres gebruiken.
+            adres = adressen_lijst[persoonID] # adressen_lijst is per PERSOON_ID
             row["Straatnaam"] = adres["Straat (tijdelijk)"]
             row["Huisnummer"] = adres["Huisnummer(s)"]
             row["Huisnummer toev."] = adres["Huisnummer toev."]
